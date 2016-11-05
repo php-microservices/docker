@@ -4,27 +4,19 @@
     "logging": {"level": "DEBUG"},
     "services": [
         {
-            "name": "microservice_battle_nginx",
+            "name": "microservice-battle-nginx",
             "port": 80,
             "health": "/usr/bin/curl --fail --silent --show-error --output /dev/null http://localhost/nginx-health",
             "poll": 10,
             "ttl": 25,
             "interfaces": ["eth0"]
-        },
-        {
-            "name": "microservice_battle_nginx-public",
-            "port": 80,
-            "health": "/usr/bin/curl --fail --silent --show-error --output /dev/null http://localhost/nginx-health",
-            "poll": 10,
-            "ttl": 25,
-            "interfaces": ["eth1", "eth0"]
         }
     ],
     "backends": [
         {
             "name": "{{ .BACKEND }}",
             "poll": 7,
-            "onChange": "/usr/local/bin/reload.sh"
+            "onChange": "/usr/local/bin/reload.sh onChange"
         }
     ],
     "coprocesses": [{{ if .CONSUL_AGENT }}

@@ -34,6 +34,10 @@ COPY scripts/ /usr/local/bin
 
 RUN chmod +x /usr/local/bin/reload.sh
 
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer
+
+RUN curl -sSL https://phar.phpunit.de/phpunit.phar -o /usr/bin/phpunit && chmod +x /usr/bin/phpunit
+
 CMD [ "/usr/local/bin/containerpilot", \
     "php-fpm", \
         "--nodaemonize"]
