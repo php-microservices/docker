@@ -3,7 +3,7 @@ FROM php:7-fpm
 RUN apt-get update && apt-get -y install \
         git g++ libcurl4-gnutls-dev libicu-dev libmcrypt-dev libpq-dev libxml2-dev unzip zlib1g-dev \
     && git clone -b php7 https://github.com/phpredis/phpredis.git /usr/src/php/ext/redis \
-    && docker-php-ext-install curl intl json mbstring mcrypt pdo pdo_pgsql redis xml \
+    && docker-php-ext-install curl intl json mbstring mcrypt pdo pdo_mysql redis xml \
     && apt-get autoremove && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/*
 
