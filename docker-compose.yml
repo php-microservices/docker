@@ -144,6 +144,8 @@ services:
         environment:
             - BACKEND=microservice-user-nginx
             - CONSUL=autodiscovery
+        ports:
+            - 9004:9000
 
     microservice_user_nginx:
         build: ./microservices/user/nginx/
