@@ -7,13 +7,24 @@ RUN apt-get update && apt-get -y install \
     && apt-get autoremove && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/*
 
-    RUN pecl install xdebug \
+
+    RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y \
+    && apt-get install -y git libmcrypt-dev libpng12-dev libjpeg-dev libpq-dev mysql-client curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
+    && docker-php-ext-install mcrypt gd mbstring pdo pdo_mysql zip \
+    && pecl install xdebug \
     && rm -rf /tmp/pear \
-    && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)\n" » /usr/local/etc/php/conf.d/xdebug.ini \
-    && echo "xdebug.remote_enable=1\n" » /usr/local/etc/php/conf.d/xdebug.ini \
-    && echo "xdebug.remote_port=9000\n" » /usr/local/etc/php/conf.d/xdebug.ini \
-    && echo "xdebug.idekey=PHPSTORM\n" » /usr/local/etc/php/conf.d/xdebug.ini \
-    && echo "xdebug.remote_autostart=1\n" » /usr/local/etc/php/conf.d/xdebug.ini
+    && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_enable=on\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_autostart=off\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_port=9000\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.profiler_enable=on\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.profiler_output_dir=/var/www/html/tmp\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.profiler_enable_trigger=on\n" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+
 
 RUN echo 'date.timezone="Europe/Madrid"' >>  /usr/local/etc/php/conf.d/date.ini
 RUN echo 'session.save_path = "/tmp"' >>  /usr/local/etc/php/conf.d/session.ini
