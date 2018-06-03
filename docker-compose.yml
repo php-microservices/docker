@@ -45,6 +45,7 @@ services:
             - BACKEND=microservice-battle-fpm
             - CONSUL=autodiscovery
         ports:
+            - 8443:443
             - 8081:80
             - 9091:9090
 
@@ -128,6 +129,17 @@ services:
         ports:
             - 6666:3306
 
+    microservice_secret_database_mariadb:
+        build: ./microservices/secret/mariadb/
+        environment:
+            - CONSUL=autodiscovery
+            - MYSQL_ROOT_PASSWORD=mysecret
+            - MYSQL_DATABASE=finding_secrets
+            - MYSQL_USER=secret
+            - MYSQL_PASSWORD=mysecret
+        ports:
+            - 7777:3306
+
     ##
     # User Microservice
     ##
@@ -169,6 +181,77 @@ services:
             - 6379
         ports:
             - 6379:6379
+
+    ##
+    # Telemetry: prometheus
+    ##
+    telemetry:
+        build: ./telemetry/
+        links:
+            - autodiscovery
+        expose:
+            - 9090
+        ports:
+            - 9090:9090
+
+    ##
+    # Sentry
+    ##
+    sentry_redis:
+        image: redis
+        expose:
+            - 6379
+
+    sentry_postgres:
+        image: postgres
+        environment:
+            - POSTGRES_PASSWORD=sentry
+            - POSTGRES_USER=sentry
+        volumes:
+            - /var/lib/postgresql/data
+        expose:
+            - 5432
+
+    sentry:
+        image: sentry
+        links:
+            - sentry_redis
+            - sentry_postgres
+        ports:
+            - 9876:9000
+        environment:
+            SENTRY_SECRET_KEY: mymicrosecret
+            SENTRY_POSTGRES_HOST: sentry_postgres
+            SENTRY_REDIS_HOST: sentry_redis
+            SENTRY_DB_USER: sentry
+            SENTRY_DB_PASSWORD: sentry
+
+    sentry_celery-beat:
+        image: sentry
+        links:
+            - sentry_redis
+            - sentry_postgres
+        command: sentry celery beat
+        environment:
+            SENTRY_SECRET_KEY: mymicrosecret
+            SENTRY_POSTGRES_HOST: sentry_postgres
+            SENTRY_REDIS_HOST: sentry_redis
+            SENTRY_DB_USER: sentry
+            SENTRY_DB_PASSWORD: sentry
+
+    sentry_celery-worker:
+        image: sentry
+        links:
+            - sentry_redis
+            - sentry_postgres
+        command: sentry celery worker
+        environment:
+            SENTRY_SECRET_KEY: mymicrosecret
+            SENTRY_POSTGRES_HOST: sentry_postgres
+            SENTRY_REDIS_HOST: sentry_redis
+            SENTRY_DB_USER: sentry
+            SENTRY_DB_PASSWORD: sentry
+
     ##
     # Source containers
     ##
